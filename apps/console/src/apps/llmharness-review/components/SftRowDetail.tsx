@@ -39,7 +39,7 @@ export function SftRowDetail({ row }: SftRowDetailProps) {
         items={[
           { k: 'phase', v: row.phase },
           { k: 'sample_id', v: row.sample_id },
-          { k: 'root_session_id', v: row.root_session_id },
+          { k: 'session_id', v: row.session_id },
           { k: 'turn_index', v: row.turn_index },
         ]}
       />

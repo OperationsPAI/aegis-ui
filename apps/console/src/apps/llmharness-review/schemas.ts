@@ -12,7 +12,12 @@
 
 export interface CaseMeta {
   case_id: string;
-  root_session_id: string;
+  /** OTel span_id of the main-agent session-root span; the
+   *  `.agentm/observability/<session_id>.jsonl` filename. */
+  session_id: string;
+  /** OTel trace_id shared across the whole agent tree (main + spawned
+   *  extractor/auditor children). Empty for offline-synthesised cases. */
+  trace_id: string;
   sample_id: string | null;
   dataset_name: string | null;
   dataset_path: string | null;
@@ -154,17 +159,23 @@ export interface SftToolCall {
 export interface SftRow {
   phase: FiringPhase;
   sample_id: string;
-  root_session_id: string;
+  session_id: string;
   turn_index: number;
   sequence?: number;
   input: { system: string; user: string };
+  // TODO(sft-target-drift): the v19 extractor refactor changed the SFT
+  // export shape to `target: { messages: AssistantMessage[] }` (multi-turn
+  // trajectory, one assistant message per tool_call with a <think> block).
+  // This `{ tool_calls }` shape is stale — only `distill export` writes
+  // sft/*.jsonl (NOT `aggregate replay`), so the case-viewer path is
+  // unaffected. Align this + SftPage rendering in a follow-up pass.
   target: { tool_calls: SftToolCall[] };
   meta?: Record<string, unknown>;
 }
 
 export interface DroppedRow {
   sample_id?: string;
-  root_session_id?: string;
+  session_id?: string;
   turn_index?: number;
   drop_reason?: string;
   [k: string]: unknown;

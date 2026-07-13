@@ -44,6 +44,8 @@ interface LoadedSft {
 }
 
 function auditorSurfaced(row: SftRowBase): boolean {
+  // TODO(sft-target-drift): reads the stale `target.tool_calls` shape; the
+  // current SFT export emits `target.messages`. See SftRow in schemas.ts.
   const call = row.target.tool_calls[0];
   const v = (call?.arguments as { verdict?: { surface_reminder?: boolean } })
     ?.verdict;
@@ -145,7 +147,7 @@ export function SftPage(): ReactElement {
       if (phase === 'auditor' && onlySurfaced && !auditorSurfaced(r))
         return false;
       if (q) {
-        const hay = [r.sample_id, r.root_session_id, String(r.turn_index)]
+        const hay = [r.sample_id, r.session_id, String(r.turn_index)]
           .join(' ')
           .toLowerCase();
         if (!hay.includes(q)) return false;
@@ -201,7 +203,7 @@ export function SftPage(): ReactElement {
       header: 'session',
       width: 200,
       render: (r) => (
-        <MonoValue size='sm'>{r.root_session_id.slice(0, 16)}</MonoValue>
+        <MonoValue size='sm'>{r.session_id.slice(0, 16)}</MonoValue>
       ),
     },
     {
@@ -303,7 +305,7 @@ export function SftPage(): ReactElement {
             <DataTable
               columns={columns}
               data={visibleRows}
-              rowKey={(r) => `${r.root_session_id}#${r.turn_index}`}
+              rowKey={(r) => `${r.session_id}#${r.turn_index}`}
               loading={loading}
               emptyTitle='No SFT rows'
               emptyDescription={

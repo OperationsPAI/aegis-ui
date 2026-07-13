@@ -910,13 +910,13 @@ type SftLoadState =
 interface SftDrawerProps {
   repo: CaseRepo;
   caseId: string;
-  rootSessionId: string;
+  sessionId: string;
 }
 
 function SftDrawer({
   repo,
   caseId,
-  rootSessionId,
+  sessionId,
 }: SftDrawerProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<'extractor' | 'auditor' | 'dropped'>(
@@ -932,7 +932,7 @@ function SftDrawer({
     let cancelled = false;
     setLoad({ kind: 'loading' });
     repo
-      .loadSftForCase(caseId, rootSessionId)
+      .loadSftForCase(caseId, sessionId)
       .then((res) => {
         if (cancelled) {
           return;
@@ -954,7 +954,7 @@ function SftDrawer({
     return () => {
       cancelled = true;
     };
-  }, [open, load.kind, repo, caseId, rootSessionId]);
+  }, [open, load.kind, repo, caseId, sessionId]);
 
   const sft = load.kind === 'loaded' ? load.sft : null;
 
@@ -1041,7 +1041,7 @@ function SftDrawer({
                   <div className='llmh-cdp__sft-list'>
                     {rows.map((r) => (
                       <button
-                        key={`${r.root_session_id}#${r.turn_index.toString()}#${r.sequence?.toString() ?? ''}`}
+                        key={`${r.session_id}#${r.turn_index.toString()}#${r.sequence?.toString() ?? ''}`}
                         type='button'
                         className='llmh-cdp__sft-row-btn'
                         onClick={() => {
@@ -1155,7 +1155,7 @@ function CaseDetailBody({ data }: { data: LoadedCase }): ReactElement {
         <SftDrawer
           repo={data.repo}
           caseId={data.caseId}
-          rootSessionId={data.bundle.meta.root_session_id}
+          sessionId={data.bundle.meta.session_id}
         />
       </div>
       <Modal

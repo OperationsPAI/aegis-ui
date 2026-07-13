@@ -72,7 +72,7 @@ export interface CaseRepo {
    *  treat that as an error. */
   loadSftForCase(
     caseId: string,
-    rootSessionId: string,
+    sessionId: string,
   ): Promise<CaseSftBundle | null>;
 }
 
@@ -818,7 +818,7 @@ export class BlobCaseRepo implements CaseRepo {
 
   async loadSftForCase(
     caseId: string,
-    rootSessionId: string,
+    sessionId: string,
   ): Promise<CaseSftBundle | null> {
     // Per-case sibling first: `<prefix><caseId>/sft/*.jsonl`.
     const perCasePrefix = `${this.prefix}${caseId}/sft/`;
@@ -831,16 +831,16 @@ export class BlobCaseRepo implements CaseRepo {
       return { extractor: pcExt, auditor: pcAud, dropped: pcDrop };
     }
 
-    // Fallback: global flat at `<prefix>sft/*.jsonl`, filtered by root session.
+    // Fallback: global flat at `<prefix>sft/*.jsonl`, filtered by session.
     const globalPrefix = `${this.prefix}sft/`;
     const [gExt, gAud, gDrop] = await Promise.all([
       this.getJsonlOrEmpty<SftRow>(`${globalPrefix}extractor.jsonl`),
       this.getJsonlOrEmpty<SftRow>(`${globalPrefix}auditor.jsonl`),
       this.getJsonlOrEmpty<DroppedRow>(`${globalPrefix}dropped.jsonl`),
     ]);
-    const extractor = gExt.filter((r) => r.root_session_id === rootSessionId);
-    const auditor = gAud.filter((r) => r.root_session_id === rootSessionId);
-    const dropped = gDrop.filter((r) => r.root_session_id === rootSessionId);
+    const extractor = gExt.filter((r) => r.session_id === sessionId);
+    const auditor = gAud.filter((r) => r.session_id === sessionId);
+    const dropped = gDrop.filter((r) => r.session_id === sessionId);
     if (extractor.length === 0 && auditor.length === 0 && dropped.length === 0) {
       return null;
     }
